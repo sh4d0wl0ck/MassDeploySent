@@ -1,0 +1,108 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.36.1.42791",
+      "templateHash": "12753475220726358318"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    },
+    "workspaceName": {
+      "type": "string",
+      "defaultValue": "law-sentinel"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2021-06-01",
+      "name": "[parameters('workspaceName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "sku": {
+          "name": "PerGB2018"
+        },
+        "retentionInDays": 30
+      }
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/providers",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[format('{0}/{1}', parameters('workspaceName'), 'MicrosoftSecurityInsights')]",
+      "kind": "MicrosoftSecurityInsights",
+      "properties": {},
+      "dependsOn": [
+        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]"
+      ]
+    },
+    {
+      "copy": {
+        "name": "solutions",
+        "count": "[length(createArray('AzureActivity', 'AzureEventHubs', 'AzureFirewall', 'AzureKeyVault', 'AzureStorage', 'AzureWebApplicationFirewall', 'Microsoft365', 'MicrosoftDefenderforCloudApps', 'MicrosoftDefenderforOffice365', 'MicrosoftDefenderThreatIntelligence', 'MicrosoftDefenderXDR', 'MicrosoftEntraID', 'MicrosoftEntraIDProtection', 'MicrosoftPurviewInformationProtection', 'AzureNetworkSecurityGroups', 'SalesforceServiceCloud', 'WindowsSecurityEvents', 'Syslog', 'MicrosoftDefenderforCloud', 'MicrosoftExchangeSecurityExchangeOnPremises', 'SophosEndpointProtection'))]",
+        "mode": "serial",
+        "batchSize": 1
+      },
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('solution-{0}', createArray('AzureActivity', 'AzureEventHubs', 'AzureFirewall', 'AzureKeyVault', 'AzureStorage', 'AzureWebApplicationFirewall', 'Microsoft365', 'MicrosoftDefenderforCloudApps', 'MicrosoftDefenderforOffice365', 'MicrosoftDefenderThreatIntelligence', 'MicrosoftDefenderXDR', 'MicrosoftEntraID', 'MicrosoftEntraIDProtection', 'MicrosoftPurviewInformationProtection', 'AzureNetworkSecurityGroups', 'SalesforceServiceCloud', 'WindowsSecurityEvents', 'Syslog', 'MicrosoftDefenderforCloud', 'MicrosoftExchangeSecurityExchangeOnPremises', 'SophosEndpointProtection')[copyIndex()])]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "solutionName": {
+            "value": "[createArray('AzureActivity', 'AzureEventHubs', 'AzureFirewall', 'AzureKeyVault', 'AzureStorage', 'AzureWebApplicationFirewall', 'Microsoft365', 'MicrosoftDefenderforCloudApps', 'MicrosoftDefenderforOffice365', 'MicrosoftDefenderThreatIntelligence', 'MicrosoftDefenderXDR', 'MicrosoftEntraID', 'MicrosoftEntraIDProtection', 'MicrosoftPurviewInformationProtection', 'AzureNetworkSecurityGroups', 'SalesforceServiceCloud', 'WindowsSecurityEvents', 'Syslog', 'MicrosoftDefenderforCloud', 'MicrosoftExchangeSecurityExchangeOnPremises', 'SophosEndpointProtection')[copyIndex()]]"
+          },
+          "workspaceName": {
+            "value": "[parameters('workspaceName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.36.1.42791",
+              "templateHash": "652540060817375389"
+            }
+          },
+          "parameters": {
+            "solutionName": {
+              "type": "string"
+            },
+            "workspaceName": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.SecurityInsights/contentHubs",
+              "apiVersion": "2022-12-01-preview",
+              "name": "[format('{0}-solution', parameters('solutionName'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "contentHubSolutionId": "[parameters('solutionName')]",
+                "offerType": "Solution",
+                "workspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
